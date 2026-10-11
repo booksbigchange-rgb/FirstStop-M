@@ -1,0 +1,55 @@
+name: FirstStop-M browser preview
+
+on:
+  push:
+    branches:
+      - feat/supabase-setup-verified
+    paths:
+      - 'lib/**'
+      - 'web/**'
+      - 'test/**'
+      - 'pubspec.*'
+      - 'config/project.json'
+      - '.github/workflows/pages-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: firststop-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Flutter app
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Dependencies
+        run: flutter pub get
+      - name: Static analysis
+        run: flutter analyze
+      - name: Automated tests
+        run: flutter test --reporter expanded --concurrency=1 --timeout 90s
+        timeout-minutes: 3
+      - name: Build GitHub Pages preview
+        run: flutter build web --release --base-href /FirstStop-M/ --dart-define-from-file=config/project.json
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload preview
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/web
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
