@@ -25,6 +25,7 @@ void main() {
       final client = SupabaseClient(
         'https://example.supabase.co',
         'public-test-key',
+        authOptions: const AuthClientOptions(autoRefreshToken: false),
       );
       debugPrint('LOGIN-TEST: after client construction');
       addTearDown(client.dispose);
