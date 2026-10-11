@@ -25,6 +25,7 @@ void main() {
         'https://example.supabase.co',
         'public-test-key',
       );
+      addTearDown(client.dispose);
       await tester.pumpWidget(ConnectedApp(client: client));
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Add demo wash ticket'), findsNothing);
@@ -36,7 +37,6 @@ void main() {
       expect(find.text('ኢሜይል'), findsOneWidget);
       expect(find.text('የይለፍ ቃል'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
-      await client.dispose().timeout(const Duration(seconds: 5));
     },
   );
 }
