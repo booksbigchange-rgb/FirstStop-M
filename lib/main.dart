@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const FirstStopApp());
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const url = String.fromEnvironment('SUPABASE_URL');
+  const key = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  if (url.isNotEmpty && key.isNotEmpty) {
+    await Supabase.initialize(url: url, anonKey: key);
+  }
+  runApp(const FirstStopApp());
+}
 
 class FirstStopApp extends StatefulWidget {
   const FirstStopApp({super.key});
