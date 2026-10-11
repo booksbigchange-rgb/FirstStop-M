@@ -29,14 +29,14 @@ void main() {
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Add demo wash ticket'), findsNothing);
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       expect(find.textContaining('Could not sign in'), findsOneWidget);
       await tester.tap(find.text('አማርኛ'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       expect(find.text('ኢሜይል'), findsOneWidget);
       expect(find.text('የይለፍ ቃል'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
-      await client.dispose();
+      await client.dispose().timeout(const Duration(seconds: 5));
     },
   );
 }
