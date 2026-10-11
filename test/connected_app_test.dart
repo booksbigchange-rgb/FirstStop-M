@@ -26,7 +26,9 @@ void main() {
         'public-test-key',
         authOptions: const AuthClientOptions(autoRefreshToken: false),
       );
-      addTearDown(client.dispose);
+      // This test makes no network requests and disables automatic token
+      // refresh above. SupabaseClient.dispose() can block a fake-async test.
+      // The ephemeral client is released when this test isolate exits.
       await tester.pumpWidget(ConnectedApp(client: client));
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Add demo wash ticket'), findsNothing);
