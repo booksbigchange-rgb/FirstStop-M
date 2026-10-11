@@ -15,9 +15,13 @@ Flutter Web is ready for an owner sign-in pilot; **do not use for real checkout 
 Existing Supabase project: `oqsniminuhewtvafetmt` (free tier). Its database was created and provisioned separately. Do **not** rerun `0001_initial.sql` on this existing project. Migrations `0002` and `0003` have already been applied there.
 
 ## Preview
-A browser-preview workflow lives at `.github/workflows/pages-preview.yml` on the development branch.
-It builds with `--base-href /FirstStop-M/` and uses only the publishable Supabase configuration.
-GitHub Pages must be configured to use GitHub Actions for deployment; confirm the workflow's deployment result before sharing a URL.
+The development browser preview was deployed successfully through GitHub Actions:
+
+**https://booksbigchange-rgb.github.io/FirstStop-M/**
+
+[Verified deployment run](https://github.com/booksbigchange-rgb/FirstStop-M/actions/runs/38164814196) — Flutter analysis, tests, build and Pages upload passed. GitHub reported successful deployment, but owner sign-in and visual browser acceptance are **not yet manually verified**. The site is publicly reachable; business records require authenticated access under RLS. Do not use checkout or store actual sales yet.
+
+The preview is produced by `.github/workflows/pages-preview.yml` from `feat/supabase-setup-verified`, using `--base-href /FirstStop-M/` and the publishable Supabase configuration only.
 
 ## Local run
 ```bash
