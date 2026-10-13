@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'first_stop_dashboard.dart';
+
 /// Role checks here control navigation only. PostgreSQL enforces every request.
 bool canReadWash(String role) =>
     ['owner', 'manager', 'cashier', 'washer'].contains(role);
@@ -256,20 +258,78 @@ class _ConnectedAppState extends State<ConnectedApp> {
     ),
   );
 
-  Widget section(String title, List<Widget> children) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
+  Widget section(String title, List<Widget> children) => Container(
+    padding: const EdgeInsets.all(28),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: const Color(0xFFECE5DF)),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title,
+            style: const TextStyle(
+                fontSize: 25, color: firstStopInk,
+                fontWeight: FontWeight.w900)),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    ),
+  );
+
+  Widget _staffEditor() => Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: const Color(0xFFECE5DF)),
+    ),
+    child: ExpansionTile(
+      leading: const CircleAvatar(
+        backgroundColor: Color(0xFFFFEEEE),
+        child: Icon(Icons.manage_accounts_outlined, color: firstStopRed),
       ),
+      title: Text(
+        t('Manage staff access', 'የሠራተኞች ፈቃድ አስተዳድር'),
+        style: const TextStyle(
+            fontWeight: FontWeight.w800, color: firstStopInk),
+      ),
+      subtitle: Text(
+        t('Assign a role to an existing confirmed account',
+            'ለተረጋገጠ መለያ የሥራ ድርሻ ይመድቡ'),
+      ),
+      childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
+      children: [
+        field(staffEmail, t('Staff email', 'የሠራተኛ ኢሜይል'), mail: true),
+        field(staffName, t('Staff name', 'የሠራተኛ ስም')),
+        DropdownButtonFormField<String>(
+          initialValue: staffRole,
+          decoration: InputDecoration(labelText: t('Role', 'የሥራ ድርሻ')),
+          items: [
+            for (final r in ['manager', 'cashier', 'washer', 'barista'])
+              DropdownMenuItem(value: r, child: Text(roleName(r))),
+          ],
+          onChanged: busy ? null : (v) {
+            if (v != null) setState(() => staffRole = v);
+          },
+        ),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(t('Account enabled', 'መለያ ንቁ ነው')),
+          value: enabled,
+          onChanged: busy ? null : (v) => setState(() => enabled = v),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: busy ? null : saveStaff,
+            icon: const Icon(Icons.save_outlined),
+            label: Text(t('Save staff access', 'የሠራተኛ ፈቃድ አስቀምጥ')),
+          ),
+        ),
+      ],
     ),
   );
 
@@ -282,11 +342,54 @@ class _ConnectedAppState extends State<ConnectedApp> {
       title: 'FirstStop-M',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF125BA5)),
+        scaffoldBackgroundColor: firstStopCream,
+        colorScheme: ColorScheme.fromSeed(seedColor: firstStopRed),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: firstStopInk,
+          surfaceTintColor: Colors.white,
+          elevation: 0,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFFCFAF8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(13),
+            borderSide: const BorderSide(color: Color(0xFFE7DCD6)),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: firstStopRed,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('FirstStop-M'),
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.local_cafe_rounded, color: firstStopRed),
+              SizedBox(width: 9),
+              Flexible(
+                child: Text(
+                  'FIRST STOP',
+                  style: TextStyle(
+                    color: firstStopInk,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: busy ? null : changeLanguage,
@@ -313,9 +416,9 @@ class _ConnectedAppState extends State<ConnectedApp> {
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
+              constraints: const BoxConstraints(maxWidth: 1160),
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(18, 28, 18, 40),
                 children: [
                   if (busy) const LinearProgressIndicator(),
                   if (error != null)
@@ -349,104 +452,19 @@ class _ConnectedAppState extends State<ConnectedApp> {
                         child: Text(t('Sign in', 'ግባ')),
                       ),
                     ]),
-                  if (signedIn)
-                    OutlinedButton.icon(
-                      onPressed: busy ? null : load,
-                      icon: const Icon(Icons.refresh),
-                      label: Text(t('Refresh account', 'መለያ አድስ')),
+                  if (profile != null)
+                    FirstStopDashboard(
+                      profile: profile!,
+                      role: role,
+                      washes: washes,
+                      cafes: cafes,
+                      staff: staff,
+                      t: t,
+                      roleName: roleName,
+                      statusName: statusName,
+                      onRefresh: busy ? null : load,
+                      staffEditor: role == 'owner' ? _staffEditor() : null,
                     ),
-                  if (profile != null) ...[
-                    section(t('Your account', 'የእርስዎ መለያ'), [
-                      Text('${profile!['display_name']} • ${roleName(role)}'),
-                    ]),
-                    Text(
-                      t(
-                        'Connected to your business. Orders are read-only while checkout is under development.',
-                        'ከንግድዎ ጋር ተገናኝቷል። የክፍያ ሥርዓቱ እስኪጠናቀቅ ድረስ ትዕዛዞችን ማየት ብቻ ይቻላል።',
-                      ),
-                    ),
-                    if (canReadWash(role))
-                      section(t('Car wash queue', 'የመኪና ማጠቢያ ተራ'), [
-                        if (washes.isEmpty)
-                          Text(t('No wash tickets yet.', 'ገና የማጠብ ትዕዛዞች የሉም።')),
-                        for (final job in washes)
-                          ListTile(
-                            title: Text(job['plate_number'] as String),
-                            subtitle: Text(statusName(job['status'] as String)),
-                          ),
-                      ]),
-                    if (canReadCafe(role))
-                      section(t('Coffee orders', 'የቡና ትዕዛዞች'), [
-                        if (cafes.isEmpty)
-                          Text(t('No coffee orders yet.', 'ገና የቡና ትዕዛዞች የሉም።')),
-                        for (final order in cafes)
-                          ListTile(
-                            title: Text(
-                              '${t('Order', 'ትዕዛዝ')} ${order['id'].toString().substring(0, 8)}',
-                            ),
-                            subtitle: Text(
-                              statusName(order['status'] as String),
-                            ),
-                          ),
-                      ]),
-                    if (['owner', 'manager'].contains(role))
-                      section(t('Staff', 'ሠራተኞች'), [
-                        for (final person in staff)
-                          ListTile(
-                            title: Text(person['display_name'] as String),
-                            subtitle: Text(
-                              '${roleName(person['role'] as String)} • ${person['active'] == true ? t('Active', 'ንቁ') : t('Disabled', 'ታግዷል')}',
-                            ),
-                          ),
-                      ]),
-                    if (role == 'owner')
-                      section(t('Set staff access', 'የሠራተኛ ፈቃድ ያዘጋጁ'), [
-                        Text(
-                          t(
-                            'Use the email of an existing confirmed staff account.',
-                            'የነባር የተረጋገጠ የሠራተኛ መለያ ኢሜይል ይጠቀሙ።',
-                          ),
-                        ),
-                        field(
-                          staffEmail,
-                          t('Staff email', 'የሠራተኛ ኢሜይል'),
-                          mail: true,
-                        ),
-                        field(staffName, t('Staff name', 'የሠራተኛ ስም')),
-                        DropdownButton<String>(
-                          value: staffRole,
-                          isExpanded: true,
-                          items: [
-                            for (final r in [
-                              'manager',
-                              'cashier',
-                              'washer',
-                              'barista',
-                            ])
-                              DropdownMenuItem(
-                                value: r,
-                                child: Text(roleName(r)),
-                              ),
-                          ],
-                          onChanged: busy
-                              ? null
-                              : (v) => setState(() => staffRole = v!),
-                        ),
-                        SwitchListTile(
-                          title: Text(t('Account enabled', 'መለያ ንቁ ነው')),
-                          value: enabled,
-                          onChanged: busy
-                              ? null
-                              : (v) => setState(() => enabled = v),
-                        ),
-                        FilledButton(
-                          onPressed: busy ? null : saveStaff,
-                          child: Text(
-                            t('Save staff access', 'የሠራተኛ ፈቃድ አስቀምጥ'),
-                          ),
-                        ),
-                      ]),
-                  ],
                 ],
               ),
             ),
