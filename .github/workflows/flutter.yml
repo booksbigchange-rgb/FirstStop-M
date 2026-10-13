@@ -14,5 +14,12 @@ jobs:
           channel: stable
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
-      - run: flutter build web --release
+      - name: Flutter widget tests (bounded, expanded output)
+        run: flutter test --reporter expanded --concurrency=1 --timeout 90s
+        timeout-minutes: 3
+      - run: flutter build web --release --dart-define-from-file=config/project.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firststop-web
+          path: build/web
+          retention-days: 3
